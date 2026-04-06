@@ -1,0 +1,16 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head -->
+  <circle cx="100" cy="50" r="25" fill="#6B7280"/>
+
+  <!-- Shoulders and upper body -->
+  <path d="M 75 75 Q 75 80 70 85 L 130 85 Q 125 80 125 75 Z" fill="#6B7280"/>
+
+  <!-- Main torso -->
+  <rect x="80" y="85" width="40" height="50" fill="#6B7280" rx="4"/>
+
+  <!-- Left arm -->
+  <rect x="55" y="90" width="25" height="15" fill="#6B7280" rx="7"/>
+
+  <!-- Right arm -->
+  <rect x="120" y="90" width="25" height="15" fill="#6B7280" rx="7"/>
+</svg>
