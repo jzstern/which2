@@ -16,23 +16,39 @@ interface ResultsCardProps {
   onTryAgain: () => void;
 }
 
+function googleImageSearchUrl(name: string): string {
+  return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(name)}`;
+}
+
 function CelebrityPhoto({ celebrity }: { celebrity: Celebrity }) {
   const [src, setSrc] = useState(celebrity.imageUrl);
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative h-28 w-28 overflow-hidden rounded-full bg-muted sm:h-36 sm:w-36">
-        <Image
-          src={src}
-          alt={celebrity.name}
-          fill
-          className="object-cover"
-          unoptimized
-          onError={() => setSrc("/placeholder-silhouette.svg")}
-        />
-      </div>
-      <h3 className="text-center text-base font-bold sm:text-lg">
+      <a
+        href={googleImageSearchUrl(celebrity.name)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group"
+      >
+        <div className="relative h-28 w-28 overflow-hidden rounded-full bg-muted transition-shadow group-hover:ring-2 group-hover:ring-primary sm:h-36 sm:w-36">
+          <Image
+            src={src}
+            alt={celebrity.name}
+            fill
+            className="object-cover"
+            unoptimized
+            onError={() => setSrc("/placeholder-silhouette.svg")}
+          />
+        </div>
+      </a>
+      <a
+        href={googleImageSearchUrl(celebrity.name)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-center text-base font-bold underline-offset-2 hover:underline sm:text-lg"
+      >
         {celebrity.name}
-      </h3>
+      </a>
       <p className="text-center text-xs text-muted-foreground sm:text-sm">
         {celebrity.description}
       </p>
