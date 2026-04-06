@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "doppler run -- next dev",
-    "build": "doppler run -- next build",
-    "start": "doppler run -- next start",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "dev:local": "doppler run -- next dev",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
