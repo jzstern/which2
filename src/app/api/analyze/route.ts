@@ -5,7 +5,10 @@ import { analyzeWithGemini } from "@/lib/gemini";
 import { fetchCelebrityImage } from "@/lib/wikimedia";
 import type { AnalyzeResponse, AnalyzeError } from "@/lib/types";
 
+const MAX_BODY_BYTES = 4 * 1024 * 1024; // 4MB — generous limit for base64 + JSON overhead
 const rateLimiter = new RateLimiter(2);
+
+setInterval(() => rateLimiter.cleanup(), 60 * 60 * 1000);
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -18,6 +21,14 @@ function getClientIp(request: NextRequest): string {
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<AnalyzeResponse | AnalyzeError>> {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      { error: "Request too large (max 4MB)" },
+      { status: 413 },
+    );
+  }
+
   const ip = getClientIp(request);
 
   let body: { image?: string };
@@ -62,6 +73,8 @@ export async function POST(
 
     return NextResponse.json(response);
   } catch (err) {
+    rateLimiter.refund(ip);
+
     const isNetworkError =
       err instanceof TypeError ||
       (err instanceof Error && err.message.includes("fetch"));

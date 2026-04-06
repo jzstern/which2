@@ -14,6 +14,7 @@ function resizeImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
+      URL.revokeObjectURL(img.src);
       const scale = Math.min(
         1,
         MAX_DIMENSION / Math.max(img.width, img.height),
@@ -25,7 +26,10 @@ function resizeImage(file: File): Promise<string> {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL(file.type, 0.85));
     };
-    img.onerror = reject;
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject(new Error("Failed to load image"));
+    };
     img.src = URL.createObjectURL(file);
   });
 }

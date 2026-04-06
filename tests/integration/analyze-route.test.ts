@@ -2,11 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import type { GeminiResult } from "@/lib/types";
 
-const { mockAnalyzeWithGemini, mockFetchCelebrityImage, mockRateLimiterCheck } = vi.hoisted(
+const { mockAnalyzeWithGemini, mockFetchCelebrityImage, mockRateLimiterCheck, mockRateLimiterRefund } = vi.hoisted(
   () => ({
     mockAnalyzeWithGemini: vi.fn(),
     mockFetchCelebrityImage: vi.fn(),
     mockRateLimiterCheck: vi.fn(),
+    mockRateLimiterRefund: vi.fn(),
   }),
 );
 
@@ -20,7 +21,7 @@ vi.mock("@/lib/wikimedia", () => ({
 
 vi.mock("@/lib/rate-limiter", () => ({
   RateLimiter: vi.fn(function () {
-    return { check: mockRateLimiterCheck };
+    return { check: mockRateLimiterCheck, refund: mockRateLimiterRefund, cleanup: vi.fn() };
   }),
 }));
 
@@ -52,6 +53,7 @@ describe("POST /api/analyze", () => {
     mockAnalyzeWithGemini.mockReset();
     mockFetchCelebrityImage.mockReset();
     mockRateLimiterCheck.mockReset();
+    mockRateLimiterRefund.mockReset();
   });
 
   it("returns 200 with celebrity data on success", async () => {
@@ -117,7 +119,7 @@ describe("POST /api/analyze", () => {
     expect(body.error).toContain("Unsupported image format");
   });
 
-  it("returns 500 when Gemini fails", async () => {
+  it("returns 500 and refunds rate limit when Gemini fails", async () => {
     // #given
     mockRateLimiterCheck.mockReturnValue({ allowed: true, remaining: 1 });
     mockAnalyzeWithGemini.mockRejectedValue(new Error("Gemini service unavailable"));
@@ -129,5 +131,6 @@ describe("POST /api/analyze", () => {
     // #then
     expect(response.status).toBe(500);
     expect(body.error).toContain("analyze");
+    expect(mockRateLimiterRefund).toHaveBeenCalled();
   });
 });

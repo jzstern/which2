@@ -44,6 +44,14 @@ export class RateLimiter {
     return Math.max(0, this.limit - entry.count);
   }
 
+  refund(ip: string): void {
+    const today = todayKey();
+    const entry = this.store.get(ip);
+    if (entry && entry.dateKey === today && entry.count > 0) {
+      entry.count--;
+    }
+  }
+
   cleanup(): void {
     const today = todayKey();
     for (const [ip, entry] of this.store) {

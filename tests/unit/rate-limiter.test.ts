@@ -85,6 +85,20 @@ describe("RateLimiter", () => {
     expect(remaining).toBe(1);
   });
 
+  it("refunds a consumed request", () => {
+    // #given
+    const ip = "192.168.1.1";
+    limiter.check(ip);
+    limiter.check(ip);
+    expect(limiter.remaining(ip)).toBe(0);
+
+    // #when
+    limiter.refund(ip);
+
+    // #then
+    expect(limiter.remaining(ip)).toBe(1);
+  });
+
   it("cleans up stale entries", () => {
     // #given
     const ip = "192.168.1.1";
