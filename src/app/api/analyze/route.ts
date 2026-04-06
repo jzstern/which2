@@ -73,11 +73,21 @@ export async function POST(
 
     return NextResponse.json(response);
   } catch (err) {
+    console.error("[analyze] Error:", err);
     rateLimiter.refund(ip);
 
+    const message = err instanceof Error ? err.message : "";
+    const isQuotaError = message.includes("429") || message.includes("quota");
     const isNetworkError =
-      err instanceof TypeError ||
-      (err instanceof Error && err.message.includes("fetch"));
+      err instanceof TypeError || message.includes("fetch");
+
+    if (isQuotaError) {
+      return NextResponse.json(
+        { error: "AI service is temporarily busy. Please wait a minute and try again." },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Couldn't analyze your photo. Please try again." },
       { status: isNetworkError ? 502 : 500 },
