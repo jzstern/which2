@@ -24,8 +24,8 @@ User uploads photo
   → Calls Gemini 2.0 Flash with vision prompt
   → Gemini returns: 2 famous person names, who they are, why the user looks like a mix
   → API route validates response structure (exactly 2 names)
-  → Returns JSON to client
-  → Client fetches celebrity photos from Wikimedia Commons API
+  → API route fetches celebrity photos from Wikimedia Commons API (with silhouette fallback)
+  → Returns JSON to client (including image URLs)
   → Renders screenshot-friendly results page
 ```
 
@@ -33,6 +33,8 @@ User uploads photo
 
 - No database, no file storage — photo is base64, processed, discarded
 - No authentication — public tool, no accounts
+- CORS restricted to app's own origin
+- Max base64 payload: 2MB (after client-side resize)
 - Celebrity scope: actors, musicians, athletes, historical figures, influencers, YouTubers, TikTokers, politicians, world leaders — any widely recognizable person
 
 ## Tech Stack
@@ -58,6 +60,7 @@ User uploads photo
 - Large drop zone / tap-to-upload (mobile-first)
 - Tagline: "Find out which 2 famous faces you're a mashup of"
 - Client-side image resize before upload
+- Brief privacy note: "Your photo is analyzed but never stored"
 
 ### Screen 2: Loading
 
@@ -121,7 +124,7 @@ User uploads photo
 The prompt instructs Gemini to:
 1. Analyze the uploaded face
 2. Pick exactly 2 famous/recognizable people from any era or category
-3. Prioritize widely recognizable figures
+3. Prioritize widely recognizable figures likely to have Wikipedia/Wikimedia presence
 4. Explain why the person looks like a mashup of those two
 5. Return structured JSON
 
@@ -133,6 +136,7 @@ Response validation: must contain exactly 2 celebrity entries with name and desc
 - 2 requests per IP per calendar day (UTC)
 - TTL-based cleanup to prevent memory leaks
 - Rate limit info included in response headers and body
+- Resets on deploy (acceptable for v1 — users get a bonus reset)
 - Future: swap to Redis/external store if scaling requires it
 
 ## Monetization (Future-Ready)
